@@ -1,0 +1,198 @@
+{
+  "hostname": "oibaf-MacBook-Air-2.local",
+  "serial": "C3FH4VWCTG",
+  "collected_at": "2026-05-29T19:27:35.664909Z",
+  "platform": "darwin",
+  "volumes": [
+    {
+      "name": "/",
+      "mount": "/",
+      "device": "/dev/disk3s1s1",
+      "capacity_bytes": 494384795648,
+      "free_bytes": 38908272640,
+      "used_bytes": 16711426048,
+      "used_percent": 3.3802467622605588,
+      "is_external": false,
+      "is_network": false,
+      "growth_bytes_per_day": 0
+    },
+    {
+      "name": "VM",
+      "mount": "/System/Volumes/VM",
+      "device": "/dev/disk3s6",
+      "capacity_bytes": 494384795648,
+      "free_bytes": 38908272640,
+      "used_bytes": 1073766400,
+      "used_percent": 0.21719243986712677,
+      "is_external": true,
+      "is_network": false,
+      "growth_bytes_per_day": 0
+    },
+    {
+      "name": "Preboot",
+      "mount": "/System/Volumes/Preboot",
+      "device": "/dev/disk3s2",
+      "capacity_bytes": 494384795648,
+      "free_bytes": 38908272640,
+      "used_bytes": 17957339136,
+      "used_percent": 3.632259586879681,
+      "is_external": true,
+      "is_network": false,
+      "growth_bytes_per_day": 0
+    },
+    {
+      "name": "Update",
+      "mount": "/System/Volumes/Update",
+      "device": "/dev/disk3s4",
+      "capacity_bytes": 494384795648,
+      "free_bytes": 38908272640,
+      "used_bytes": 814243840,
+      "used_percent": 0.16469839832609626,
+      "is_external": true,
+      "is_network": false,
+      "growth_bytes_per_day": 0
+    },
+    {
+      "name": "xarts",
+      "mount": "/System/Volumes/xarts",
+      "device": "/dev/disk1s2",
+      "capacity_bytes": 524288000,
+      "free_bytes": 505036800,
+      "used_bytes": 6311936,
+      "used_percent": 1.20390625,
+      "is_external": true,
+      "is_network": false,
+      "growth_bytes_per_day": 0
+    },
+    {
+      "name": "iSCPreboot",
+      "mount": "/System/Volumes/iSCPreboot",
+      "device": "/dev/disk1s1",
+      "capacity_bytes": 524288000,
+      "free_bytes": 505036800,
+      "used_bytes": 6270976,
+      "used_percent": 1.19609375,
+      "is_external": true,
+      "is_network": false,
+      "growth_bytes_per_day": 0
+    },
+    {
+      "name": "Hardware",
+      "mount": "/System/Volumes/Hardware",
+      "device": "/dev/disk1s3",
+      "capacity_bytes": 524288000,
+      "free_bytes": 505036800,
+      "used_bytes": 1691648,
+      "used_percent": 0.32265625,
+      "is_external": true,
+      "is_network": false,
+      "growth_bytes_per_day": 0
+    },
+    {
+      "name": "Data",
+      "mount": "/System/Volumes/Data",
+      "device": "/dev/disk3s5",
+      "capacity_bytes": 494384795648,
+      "free_bytes": 38908272640,
+      "used_bytes": 416149598208,
+      "used_percent": 84.1752420121546,
+      "is_external": true,
+      "is_network": false,
+      "growth_bytes_per_day": 0
+    },
+    {
+      "name": "mnt1",
+      "mount": "/System/Volumes/Update/mnt1",
+      "device": "/dev/disk3s1",
+      "capacity_bytes": 494384795648,
+      "free_bytes": 38908272640,
+      "used_bytes": 16711426048,
+      "used_percent": 3.3802467622605588,
+      "is_external": true,
+      "is_network": false,
+      "growth_bytes_per_day": 0
+    }
+  ],
+  "profiles": [
+    {
+      "id": "backup",
+      "name": "Endpoint backup",
+      "confidence": 0.9,
+      "bytes": 0,
+      "paths_redacted": []
+    },
+    {
+      "id": "cloud_sync",
+      "name": "Business cloud sync",
+      "confidence": 0.4,
+      "bytes": 46682112,
+      "paths_redacted": [
+        "~/Library/CloudStorage"
+      ]
+    },
+    {
+      "id": "creative",
+      "name": "Creative / video",
+      "confidence": 0.5615409851074219,
+      "bytes": 330395648,
+      "paths_redacted": [
+        "~/Movies",
+        "~/Music"
+      ]
+    },
+    {
+      "id": "development",
+      "name": "Development + containers",
+      "confidence": 0.568680419921875,
+      "bytes": 921812992,
+      "paths_redacted": [
+        "~/Library/Developer",
+        "~/.cache",
+        "~/go/pkg",
+        "~/.npm",
+        "~/.docker"
+      ]
+    },
+    {
+      "id": "mdm_packages",
+      "name": "MDM / package caches",
+      "confidence": 0.9,
+      "bytes": 3259994112,
+      "paths_redacted": [
+        "~/Library/Caches/Homebrew"
+      ]
+    },
+    {
+      "id": "system_logs",
+      "name": "System logs \u0026 journals",
+      "confidence": 0.5150726318359375,
+      "bytes": 40460288,
+      "paths_redacted": [
+        "/var/log/journal"
+      ]
+    },
+    {
+      "id": "local_ai",
+      "name": "Local AI models",
+      "confidence": 0.5245016479492187,
+      "bytes": 328855552,
+      "paths_redacted": [
+        "~/.cache/huggingface",
+        "~/.ollama"
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "severity": "warning",
+      "code": "inode_pressure",
+      "message": "Inode usage on /System/Volumes/Data is 92.0%",
+      "remediation": "Remove small files or vacuum journals",
+      "playbook_id": "logs"
+    }
+  ],
+  "health": {
+    "backup_ok": true,
+    "inode_percent": 100
+  }
+}

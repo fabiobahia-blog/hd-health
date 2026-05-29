@@ -66,9 +66,15 @@ func Quick(ctx context.Context, plat platform.Platform, mount string) (*Result, 
 			}
 		}
 	}
+	suggestions := plat.SuggestExternalTools()
+	for i, s := range suggestions {
+		if strings.HasPrefix(s, "ncdu /") && target != "" && target != "/" {
+			suggestions[i] = "ncdu " + target
+		}
+	}
 	return &Result{
 		Volumes:     b.String(),
-		Suggestions: plat.SuggestExternalTools(),
+		Suggestions: suggestions,
 		TopDirs:     top,
 	}, nil
 }

@@ -118,8 +118,13 @@ func run() int {
 		return 0
 
 	case "remediate":
+		vols, _ := plat.Volumes(ctx)
+		remMount := platform.ResolveMount(*mount, vols)
+		if len(args) >= 2 && strings.HasPrefix(args[1], "/") {
+			remMount = platform.ResolveMount(args[1], vols)
+		}
 		opt := remediate.Options{
-			Mount: *mount, DryRun: *dryRun && !*apply, Apply: *apply, Aggressive: *aggressive,
+			Mount: remMount, DryRun: *dryRun && !*apply, Apply: *apply, Aggressive: *aggressive,
 		}
 		if *apply {
 			opt.DryRun = false

@@ -84,9 +84,17 @@ func runStep(ctx context.Context, command string, needsRoot bool) error {
 	return cmd.Run()
 }
 
+func shellMount(mount string) string {
+	if strings.Contains(mount, " ") {
+		return `"` + mount + `"`
+	}
+	return mount
+}
+
 func darwinPlaybooks(mount string) []domain.PlaybookStep {
+	m := shellMount(mount)
 	return []domain.PlaybookStep{
-		{ID: "diagnose", Description: "Confirm disk space", Commands: []string{"df -h", "df -i", "df -h " + mount}, Risk: "low"},
+		{ID: "diagnose", Description: "Confirm disk space", Commands: []string{"df -h", "df -i", "df -h " + m}, Risk: "low"},
 		{ID: "pkg-cache", Description: "Homebrew cache cleanup", Commands: []string{"brew cleanup"}, Risk: "low"},
 		{ID: "logs", Description: "Check unified logging /var/log size", Commands: []string{"du -sh /var/log"}, Risk: "low"},
 		{ID: "temp", Description: "Clear user Library caches (review first)", Commands: []string{"du -sh ~/Library/Caches", "# rm -rf ~/Library/Caches/*"}, Risk: "high", RequiresRoot: false},
@@ -94,14 +102,15 @@ func darwinPlaybooks(mount string) []domain.PlaybookStep {
 		{ID: "docker-safe", Description: "Docker prune unused", Commands: []string{"docker system df", "docker system prune -f"}, Risk: "low"},
 		{ID: "docker-aggressive", Description: "Docker prune all unused images", Commands: []string{"docker system prune -a -f"}, Risk: "high"},
 		{ID: "docker-volumes", Description: "Docker volume prune", Commands: []string{"docker volume prune -f"}, Risk: "high"},
-		{ID: "ncdu", Description: "Interactive analyzer", Commands: []string{"brew install ncdu", "ncdu " + mount}, Risk: "low"},
-		{ID: "verify", Description: "Verify space freed", Commands: []string{"df -h", "df -h " + mount}, Risk: "low"},
+		{ID: "ncdu", Description: "Interactive analyzer", Commands: []string{"brew install ncdu", "ncdu " + m}, Risk: "low"},
+		{ID: "verify", Description: "Verify space freed", Commands: []string{"df -h", "df -i", "df -h " + m}, Risk: "low"},
 	}
 }
 
 func fedoraPlaybooks(mount string) []domain.PlaybookStep {
+	m := shellMount(mount)
 	return []domain.PlaybookStep{
-		{ID: "diagnose", Description: "Confirm disk space", Commands: []string{"df -h", "df -i", "df -h " + mount}, Risk: "low"},
+		{ID: "diagnose", Description: "Confirm disk space", Commands: []string{"df -h", "df -i", "df -h " + m}, Risk: "low"},
 		{ID: "pkg-cache", Description: "DNF cache and autoremove", Commands: []string{"sudo dnf clean all", "sudo dnf autoremove -y"}, Risk: "low", RequiresRoot: true},
 		{ID: "logs", Description: "Journal vacuum", Commands: []string{"journalctl --disk-usage", "sudo journalctl --vacuum-size=500M"}, Risk: "low", RequiresRoot: true},
 		{ID: "temp", Description: "Temp and user cache (high risk)", Commands: []string{"# sudo rm -rf /tmp/*", "# rm -rf ~/.cache/*"}, Risk: "high"},
@@ -109,8 +118,8 @@ func fedoraPlaybooks(mount string) []domain.PlaybookStep {
 		{ID: "docker-safe", Description: "Docker prune unused", Commands: []string{"docker system df", "docker system prune -f"}, Risk: "low"},
 		{ID: "docker-aggressive", Description: "Docker prune all unused images", Commands: []string{"docker system prune -a -f"}, Risk: "high"},
 		{ID: "docker-volumes", Description: "Docker volume prune", Commands: []string{"docker volume prune -f"}, Risk: "high"},
-		{ID: "ncdu", Description: "Interactive analyzer", Commands: []string{"sudo dnf install -y ncdu", "sudo ncdu " + mount}, Risk: "low"},
+		{ID: "ncdu", Description: "Interactive analyzer", Commands: []string{"sudo dnf install -y ncdu", "sudo ncdu " + m}, Risk: "low"},
 		{ID: "emergency", Description: "Emergency journal shrink", Commands: []string{"sudo journalctl --vacuum-size=100M"}, Risk: "medium", RequiresRoot: true},
-		{ID: "verify", Description: "Verify space freed", Commands: []string{"df -h", "df -h " + mount}, Risk: "low"},
+		{ID: "verify", Description: "Verify space freed", Commands: []string{"df -h", "df -i", "df -h " + m}, Risk: "low"},
 	}
 }
