@@ -1,0 +1,12 @@
+[Unit]
+Description=hd-health storage metrics agent
+After=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/hd-health-agent -interval 1h
+Restart=on-failure
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target

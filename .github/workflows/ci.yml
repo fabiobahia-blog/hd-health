@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+      - run: go build -o bin/hd-health ./cmd/hd-health
+      - run: go build -o bin/hd-health-agent ./cmd/hd-health-agent
+      - run: go test ./...
+      - run: go vet ./...
+      - run: ./bin/hd-health scan
+      - run: ./bin/hd-health export --format json
+      - run: bash -n deploy/macos/install.sh
+      - run: bash -n deploy/fedora/install.sh
