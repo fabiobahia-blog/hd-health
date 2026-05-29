@@ -152,26 +152,40 @@ func (d *Darwin) InodeUsage(ctx context.Context) ([]domain.InodeStat, error) {
 	}
 	var stats []domain.InodeStat
 	lines := strings.Split(out, "\n")
+	if len(lines) == 0 {
+		return stats, nil
+	}
+	macFormat := strings.Contains(lines[0], "%iused")
 	for i, line := range lines {
 		if i == 0 || strings.TrimSpace(line) == "" {
 			continue
 		}
 		fields := splitFields(line)
-		if len(fields) < 6 {
+		mount := fields[len(fields)-1]
+
+		var total, used, free int64
+		var pct float64
+
+		// macOS: Filesystem 512-blocks Used Available Capacity iused ifree %iused Mounted
+		if macFormat && len(fields) >= 9 {
+			used, _ = strconv.ParseInt(fields[5], 10, 64)
+			free, _ = strconv.ParseInt(fields[6], 10, 64)
+			total = used + free
+			pctStr := strings.TrimSuffix(fields[7], "%")
+			pct, _ = strconv.ParseFloat(pctStr, 64)
+		} else if len(fields) >= 6 {
+			// Linux-style: Filesystem Inodes IUsed IFree IUse% Mounted
+			total, _ = strconv.ParseInt(fields[1], 10, 64)
+			used, _ = strconv.ParseInt(fields[2], 10, 64)
+			free, _ = strconv.ParseInt(fields[3], 10, 64)
+			pctStr := strings.TrimSuffix(fields[4], "%")
+			pct, _ = strconv.ParseFloat(pctStr, 64)
+		} else {
 			continue
 		}
-		mount := fields[len(fields)-1]
-		total, _ := strconv.ParseInt(fields[1], 10, 64)
-		used, _ := strconv.ParseInt(fields[2], 10, 64)
-		free, _ := strconv.ParseInt(fields[3], 10, 64)
-		pctStr := strings.TrimSuffix(fields[4], "%")
-		pct, _ := strconv.ParseFloat(pctStr, 64)
+
 		stats = append(stats, domain.InodeStat{
-			Mount:       mount,
-			Total:       total,
-			Used:        used,
-			Free:        free,
-			UsedPercent: pct,
+			Mount: mount, Total: total, Used: used, Free: free, UsedPercent: pct,
 		})
 	}
 	return stats, nil
