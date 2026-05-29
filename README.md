@@ -13,21 +13,21 @@ Storage health monitoring for IT and small business: local disks, external drive
 ## Quick start
 
 ```bash
-# Build
+export PATH="/opt/homebrew/bin:$PATH"
 make build
 
-# One-shot scan
 ./bin/hd-health scan
-
-# Full report (exit 1=warning, 2=critical)
 ./bin/hd-health report
-
-# Remediation cheat sheet (dry-run)
-./bin/hd-health remediate --mount / --dry-run
-
-# Export for RMM
+./bin/hd-health explain /System/Volumes/Data
+./bin/hd-health remediate --mount /System/Volumes/Data --dry-run
 ./bin/hd-health export --format json > report.json
 ```
+
+Exit codes: `0` ok, `1` warning, `2` critical.
+
+On macOS, user data is on `/System/Volumes/Data` — `explain /` resolves there automatically.
+
+**zsh:** run commands without inline `#` comments unless `setopt interactivecomments` is on (otherwise zsh may print `unknown file attribute`).
 
 ## Install agent (macOS)
 

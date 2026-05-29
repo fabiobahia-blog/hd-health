@@ -22,7 +22,7 @@ func main() {
 func run() int {
 	dbPath := flag.String("db", "", "SQLite metrics database path")
 	verbose := flag.Bool("verbose-paths", false, "Include full paths in profile output")
-	format := flag.String("format", "text", "export format: json or csv")
+	format := flag.String("format", "json", "export format: json, csv, or text (human)")
 	mount := flag.String("mount", "/", "mount point for remediate/explain")
 	dryRun := flag.Bool("dry-run", true, "remediate: print commands only")
 	apply := flag.Bool("apply", false, "remediate: run allowlisted low-risk commands")
@@ -52,7 +52,9 @@ func run() int {
 
 	switch cmd {
 	case "scan":
-		res, err := scan.Quick(ctx, plat, *mount)
+		vols, _ := plat.Volumes(ctx)
+		scanMount := platform.ResolveMount(*mount, vols)
+		res, err := scan.Quick(ctx, plat, scanMount)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "scan: %v\n", err)
 			return 1
@@ -84,20 +86,26 @@ func run() int {
 		if !strings.HasPrefix(m, "/") {
 			m = "/" + m
 		}
+		vols, _ := plat.Volumes(ctx)
+		m = platform.ResolveMount(m, vols)
 		*mount = m
 		b := &report.Builder{Platform: plat, Store: st, VerbosePaths: true}
 		r, _, err := b.Build(ctx)
 		if err != nil {
 			return 1
 		}
-		fmt.Printf("Explain mount: %s\n\n", *mount)
+		fmt.Printf("Explain mount: %s\n\n", m)
+		if m == "/System/Volumes/Data" {
+			fmt.Println("(APFS user data volume — use this instead of / on macOS)")
+			fmt.Println()
+		}
 		for _, p := range r.Profiles {
 			fmt.Printf("Profile: %s (%.1f GB, confidence %.0f%%)\n", p.Name, float64(p.Bytes)/(1<<30), p.Confidence*100)
 			for _, path := range p.Paths {
 				fmt.Printf("  %s\n", path)
 			}
 		}
-		dirs, err := plat.TopDirs(ctx, *mount, 2)
+		dirs, err := plat.TopDirs(ctx, m, 2)
 		if err == nil {
 			fmt.Printf("\nDirectory tree (depth 2):\n")
 			for i, d := range dirs {
@@ -140,8 +148,10 @@ func run() int {
 			_ = report.WriteJSON(os.Stdout, r)
 		case "csv":
 			_ = report.WriteCSV(os.Stdout, r)
+		case "text", "human":
+			fmt.Print(report.FormatHuman(r))
 		default:
-			fmt.Fprintf(os.Stderr, "unknown format %q\n", *format)
+			fmt.Fprintf(os.Stderr, "unknown format %q (use json, csv, or text)\n", *format)
 			return 1
 		}
 		return code
@@ -174,7 +184,7 @@ Usage:
   hd-health forecast
   hd-health explain [mount]
   hd-health remediate [--mount /] [--dry-run|--apply] [--aggressive]
-  hd-health export [--format json|csv]
+  hd-health export [--format json|csv|text]
   hd-health agent-once
 
 Exit codes: 0=ok, 1=warning, 2=critical

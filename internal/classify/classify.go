@@ -92,17 +92,13 @@ func Run(ctx context.Context, in Input) []domain.Profile {
 	add(domain.ProfileMail, "Mail & collaboration", mBytes, mP, confidence(mBytes, 1<<30))
 
 	// 8 MDM / packages
-	var mdmBytes int64
-	var mdmPaths []string
-	if in.PkgCache != nil && in.PkgCache.Bytes > 0 {
-		mdmBytes += in.PkgCache.Bytes
-		mdmPaths = append(mdmPaths, in.PkgCache.Path)
+	var mdmScan []string
+	if in.PkgCache != nil && in.PkgCache.Path != "" {
+		mdmScan = append(mdmScan, in.PkgCache.Path)
 	}
-	mdmPaths = append(mdmPaths, mdmExtraPaths()...)
-	exBytes, exP := measurePaths(ctx, mdmPaths)
-	mdmBytes += exBytes
-	mdmPaths = append(mdmPaths, exP...)
-	add(domain.ProfileMDM, "MDM / package caches", mdmBytes, mdmPaths, confidence(mdmBytes, 500<<20))
+	mdmScan = append(mdmScan, mdmExtraPaths()...)
+	mdmBytes, mdmPaths := measurePaths(ctx, mdmScan)
+	add(domain.ProfileMDM, "MDM / package caches", mdmBytes, dedupeStrings(mdmPaths), confidence(mdmBytes, 500<<20))
 
 	// 9 Logs
 	logBytes := int64(0)
@@ -197,6 +193,19 @@ func expandHome(p string) string {
 		return filepath.Join(home, p[2:])
 	}
 	return p
+}
+
+func dedupeStrings(paths []string) []string {
+	seen := make(map[string]bool, len(paths))
+	out := make([]string, 0, len(paths))
+	for _, p := range paths {
+		if p == "" || seen[p] {
+			continue
+		}
+		seen[p] = true
+		out = append(out, p)
+	}
+	return out
 }
 
 func redactPaths(paths []string) []string {

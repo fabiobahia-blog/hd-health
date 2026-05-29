@@ -30,23 +30,21 @@ func Quick(ctx context.Context, plat platform.Platform, mount string) (*Result, 
 	if len(inodes) > 0 {
 		b.WriteString("\nInode usage:\n")
 		for _, in := range inodes {
+			if in.Mount == "/dev" || in.Mount == "/dev/fd" {
+				continue
+			}
 			if in.Mount == "/" || in.Mount == "/System/Volumes/Data" || in.UsedPercent > 50 {
 				fmt.Fprintf(&b, "  %s: %.1f%% inodes used\n", in.Mount, in.UsedPercent)
 			}
 		}
 	}
 	top := map[string][]string{}
-	target := mount
-	if target == "" {
-		for _, v := range vols {
-			if v.Mount == "/" || strings.Contains(v.Mount, "Data") {
-				target = v.Mount
-				break
-			}
-		}
-		if target == "" && len(vols) > 0 {
-			target = vols[0].Mount
-		}
+	target := platform.ResolveMount(mount, vols)
+	if target == "" && len(vols) > 0 {
+		target = vols[0].Mount
+	}
+	if mount == "/" && target != "/" && target != mount {
+		fmt.Fprintf(&b, "\nNote: user data lives on %s (not APFS root /).\n", target)
 	}
 	if target != "" {
 		dirs, err := plat.TopDirs(ctx, target, 1)
