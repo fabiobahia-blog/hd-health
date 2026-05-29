@@ -2,6 +2,7 @@
 /dist/
 *.db
 *.db-journal
+report.json
 .DS_Store
 .idea/
 .vscode/
